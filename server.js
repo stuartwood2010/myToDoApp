@@ -8,6 +8,35 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// User API's
+app.post('/api/users', async (req, res) => {
+    const { username } = req.body;
+
+    if (!username) {
+        return res.status(400).json({ error: 'You must provide a username' });
+    }
+    try {
+        const createUserQuery = 'INSERT INTO users(username) VALUES(?);';
+        const getUserByIdQuery = 'SELECT * FROM users WHERE id = ?;';
+
+        const [result] = await connection.query(createUserQuery, [username]);
+        const [userResult] = await connection.query(getUserByIdQuery, [result.insertId]);
+        res.json(userResult[0])
+    } catch (error) {
+        res.status(400).json(error);
+    }
+})
+
+app.get('/api/todos', async (req, res) => {
+    try {
+        const getAllTodosQuery = 'SELECT * FROM todos;';
+        const [todos] = await connection.query(getAllTodosQuery);
+        res.json(todos);
+    } catch (error) {
+        res.status(400).json(error);
+    }
+})
+
 app.post('/api/todos', async (req, res) => {
     const { task } = req.body;
 
